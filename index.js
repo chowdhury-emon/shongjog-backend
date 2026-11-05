@@ -1,6 +1,14 @@
+import express from 'express';
+import 'dotenv/config';
+import cors from 'cors';
 import { MongoClient } from 'mongodb';
 
-const client = new MongoClient("mongodb://<db_username>:uCiLGEE9kRXhc1Rc@ac-5yofsq9-shard-00-00.niwnksk.mongodb.net:27017,ac-5yofsq9-shard-00-01.niwnksk.mongodb.net:27017,ac-5yofsq9-shard-00-02.niwnksk.mongodb.net:27017/?ssl=true&replicaSet=atlas-35z9w7-shard-0&authSource=admin");
+const app = express();
+const port = process.env.PORT || 5000;
+app.use(cors());
+app.use(express.json());
+
+const client = new MongoClient(process.env.MONGODB_URI);
 
 export async function connectToMongoDB() {
   try {
@@ -20,3 +28,10 @@ export async function disconnectFromMongoDB() {
   await client.close();
 }
 
+app.get('/', (req, res) => {
+  res.send("I'm Working")
+});
+
+app.listen(port, () => {
+  console.log("Server running on port: ", port)
+})
