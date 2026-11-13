@@ -35,9 +35,12 @@ connectToMongoDB();
 
 // http://localhost:5000/events/create
 app.post('/events/create', async (req, res) => {
-  const data = req.body;
+  const data = {
+    ...req.body,
+    eventDate: new Date(req.body.eventDate)
+  }
   console.log(data)
-  const result = await eventCollection.insertOne({ data });
+  const result = await eventCollection.insertOne(data);
   res.send(result);
 });
 
@@ -47,13 +50,22 @@ app.get('/events', async (req, res) => {
   res.send(data);
 });
 
-// http://localhost:5000/events/create
+// http://localhost:5000/events/upcomming
+app.get('/events/upcomming', async (req, res) => {
+  const today = new Date();
+  console.log(today)
+  const data = await eventCollection.find({ eventDate: { $gt: today } }).toArray();
+  res.send(data);
+});
+
+// http://localhost:5000/events/:id
 app.get('/events/:id', async (req, res) => {
   const { id } = req.params;
   console.log(id);
-  const data = await eventCollection.findOne({_id: new ObjectId(id)});
+  const data = await eventCollection.findOne({ _id: new ObjectId(id) });
   res.send(data);
 });
+
 
 app.listen(port, () => {
   console.log("Server running on port: ", port)
