@@ -5,32 +5,34 @@ import { MongoClient, ObjectId } from 'mongodb';
 
 const app = express();
 const port = process.env.PORT || 5000;
+
 app.use(cors());
 app.use(express.json());
 
 
 // MONGODB CONNECTION
 const client = new MongoClient(process.env.MONGODB_URI);
-let eventCollection;
+
 export async function connectToMongoDB() {
   try {
     await client.connect();
-    console.log("You successfully connected to MongoDB!");
-    const db = client.db("shongjog");
-    eventCollection = db.collection("events");
-
+    console.log("> You successfully connected to MongoDB");
     return client;
   } catch (err) {
     console.dir(err);
   }
 }
-connectToMongoDB();
+const mongodbClient = await connectToMongoDB();
+const shongjog = mongodbClient.db("shongjog");
+const eventCollection = shongjog.collection("events");
+const joinedCollection = shongjog.collection("joined_events");
+
 
 
 // ALL THE ROUTES
-// app.get('/', (req, res) => {
-//   res.send("I'm Working")
-// });
+app.get('/', (req, res) => {
+  res.send({ message: "Testing: Server is running successfully." })
+});
 
 
 // http://localhost:5000/events/create
@@ -53,7 +55,7 @@ app.get('/events', async (req, res) => {
 // http://localhost:5000/events/upcomming
 app.get('/events/upcomming', async (req, res) => {
   const today = new Date();
-  console.log(today)
+  // console.log(today)
   const data = await eventCollection.find({ eventDate: { $gt: today } }).toArray();
   res.send(data);
 });
@@ -61,14 +63,25 @@ app.get('/events/upcomming', async (req, res) => {
 // http://localhost:5000/events/:id
 app.get('/events/:id', async (req, res) => {
   const { id } = req.params;
-  console.log(id);
+  // console.log(id);
   const data = await eventCollection.findOne({ _id: new ObjectId(id) });
   res.send(data);
 });
 
+app.delete('/events/join/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log("delete id: ", id)
+  const result = await joinedCollection.deleteOne({
+    _id: new ObjectId(id)
+  });
+
+  res.send(result);
+})
+
+
 
 app.listen(port, () => {
-  console.log("Server running on port: ", port)
+  console.log(`> Server running on port: ${port} \n- Local: http://localhost:${port}\n`)
 });
 
 
