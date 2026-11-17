@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
   res.send({ message: "Testing: Server is running successfully." })
 });
 
-
+// EVENTS ROUTES
 // http://localhost:5000/events/create
 app.post('/events/create', async (req, res) => {
   const data = {
@@ -68,17 +68,34 @@ app.get('/events/:id', async (req, res) => {
   res.send(data);
 });
 
+
+//  JOINED EVENT ROUTES
+// http://localhost:5000/events/join
+app.post('/events/join', async (req, res) => {
+  const data = req.body;
+  // console.log(data)
+  const result = await joinedCollection.insertOne(data);
+  res.send(result);
+})
+
+// http://localhost:5000/events/join/:id
 app.delete('/events/join/:id', async (req, res) => {
   const { id } = req.params;
   console.log("delete id: ", id)
   const result = await joinedCollection.deleteOne({
     _id: new ObjectId(id)
   });
-
   res.send(result);
 })
 
-
+// http://localhost:5000/events/join-status
+app.post('/events/join-status', async (req, res) => {
+  const userId = req.body.userId;
+  const eventId = req.body.eventId;
+  const result = await joinedCollection.findOne({ userId, eventId });
+  // console.log(result);
+  res.send(result);
+})
 
 app.listen(port, () => {
   console.log(`> Server running on port: ${port} \n- Local: http://localhost:${port}\n`)
